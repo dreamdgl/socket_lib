@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #ifdef WIN32
 #include <WinSock2.h>
+#pragma comment (lib, "ws2_32.lib")
 #endif
 
 /* macros --------------------------------------------------------------------*/
