@@ -11,6 +11,7 @@
 #include "socket_lib.h"
 
 #ifdef WIN32
+/* return: -1 for error, else success. */
 extern socket_t creat_server_socket(const char *IP, int PORT)
 {
     /* local variables */
@@ -68,6 +69,7 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
     return sock;
 }
 
+/* return: -1 for error, else success. */
 extern socket_t creat_client_socket(const char *IP, int PORT)
 {
     /* local variables */
@@ -117,6 +119,17 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     
     /* 4. return socket */
     return sock;
+}
+
+extern void close_server_socket(socket_t sock)
+{
+    closesocket(sock);
+    WSACleanup();
+}
+
+extern void close_client_socket(socket_t sock)
+{
+    close_server_socket(sock);
 }
 
 #endif // WIN32

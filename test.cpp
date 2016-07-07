@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
     unsigned char buff[4096];
     FILE *output;
 
-    sockfd = creat_client_socket("192.168.3.212", 40001);
+    /* set for SiNan data stream */
+    sockfd = creat_client_socket("140.207.166.210", 31005);
     
     /* set output file */
     output = fopen("log.txt", "wb");
@@ -30,10 +31,16 @@ int main(int argc, char *argv[])
         recvnum = 0;
         memset(buff, 0x00, sizeof(buff));
         recvnum = recv(sockfd, (char *)buff, 4000, 0);
+#ifdef WIN32
+        Sleep(1000);
+#endif
         for(i = 0; i<recvnum; i++) {
             fwrite(&(buff[i]), 1, 1, output);
+#if 0
             if((i%16) == 0) printf("\n");
             printf("%02X ", buff[i]);
+#endif
+            printf("%c", buff[i]);
         }
     }
 
