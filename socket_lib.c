@@ -11,7 +11,11 @@
 #include "socket_lib.h"
 
 #ifdef WIN32
-/* return: -1 for error, else success. */
+/* creat_server_socket() for windows
+ * returns:
+ *  -1          -> error
+ * non-negative -> ok
+ */
 extern socket_t creat_server_socket(const char *IP, int PORT)
 {
     /* local variables */
@@ -69,7 +73,11 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
     return sock;
 }
 
-/* return: -1 for error, else success. */
+/* creat_client_socket() for windows
+ * returns:
+ *  -1          -> error
+ * non-negative -> ok
+ */
 extern socket_t creat_client_socket(const char *IP, int PORT)
 {
     /* local variables */
@@ -125,6 +133,98 @@ extern void close_server_socket(socket_t sock)
 {
     closesocket(sock);
     WSACleanup();
+}
+
+extern void close_client_socket(socket_t sock)
+{
+    close_server_socket(sock);
+}
+
+#else
+/* creat_server_socket() for linux
+ * returns:
+ *  -1          -> error
+ * non-negative -> ok
+ */
+extern socket_t creat_server_socket(const char *IP, int PORT)
+{
+    /* local variable */
+    socket_t sock, ret;
+    int opt;
+    struct sockaddr_in servaddr;
+
+    /* 1. open socket */
+    if( (sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        printf("creat socket error: %s(errno: %d)\n", strerror(errno), errno);
+        return sock;
+    }
+
+    /* 2. enable address reuse */
+    opt = 1;
+    ret = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    /* 3. convert server address and port */
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(inet_addr(IP));
+    servaddr.sin_port = htons(PORT);
+
+    /* 4. bind socket with address and port */
+    if( ret = bind (sock, (struct sockaddr*)&servaddr, sizeof(servaddr))
+            == -1) {
+        printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
+        return -1;
+    }
+
+    /* 5. set socket to listen mode */
+    if( listen(sock, 10) == -1) {
+        printf("listen socket error: %s(errno: %d)\n", strerror(errno), errno);
+        return -1;
+    }
+
+    /* 6. return created socket */
+    return sock;
+}
+
+/* creat_client_socket() for linux
+ * returns:
+ *  -1          -> error
+ * non-negative -> ok
+ */
+extern socket_t creat_client_socket(const char *IP, int PORT)
+{
+    /* local variables */
+    socket_t sock;
+    struct sockaddr_in servaddr;
+
+    /* 1. open socket */
+    if( (sock = socket(AF_INET, SOCK_STREAM, 0)) <0 ) {
+        printf("creat socket error: %s(errno: %d)\n", strerror(errno), errno);
+        return sock;
+    }
+
+    /* 2. set server address and port to be connected */
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_port = htons(PORT);
+    if( inet_pton(AF_INET, IP, &servaddr.sin_addr) <=0 ) {
+        printf("inet_pton error for %s\n", IP);
+        return -1;
+    }
+
+    /* 3. connect client socket with server address and port */
+    if( connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) <0 ) {
+        printf("connect error: %s(errno: %d)\n", strerror(errno), errno);
+        return -1;
+    }
+
+    /* 4. return created socket */
+    return sock;
+}
+
+extern void close_server_socket(socket_t sock)
+{
+    close(sock);
 }
 
 extern void close_client_socket(socket_t sock)

@@ -47,10 +47,16 @@
 /* includes ------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #ifdef WIN32
 #include <WinSock2.h>
 #pragma comment (lib, "ws2_32.lib")
-#endif
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif // WIN32
 
 /* macros --------------------------------------------------------------------*/
 #ifdef WIN32
