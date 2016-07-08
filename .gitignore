@@ -6,3 +6,7 @@ Release
 *.vcxproj
 *.filters
 *.user
+
+# Qt Files:
+*.pro
+*.user
