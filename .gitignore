@@ -10,3 +10,6 @@ Release
 # Qt Files:
 *.pro
 *.user
+
+# Program Output Files:
+*.bin
