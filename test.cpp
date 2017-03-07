@@ -7,6 +7,7 @@
  *
  *----------------------------------------------------------------------------*/
 
+#include <conio.h>
 #include "socket_lib.h"
 
 int main(int argc, char *argv[])
@@ -15,25 +16,30 @@ int main(int argc, char *argv[])
     int recvnum, i;
     unsigned char buff[4096];
     FILE *output;
+    const char ip[] = "192.168.3.90";
+    int port = 8888;
 
     /* set for SiNan data stream */
-    sockfd = creat_client_socket("192.168.3.211", 5017);
+    sockfd = creat_client_socket(ip, port);
     
     /* set output file */
     output = fopen("log.bin", "wb");
 
-    if(sockfd <0 ) {
-        printf("error\n");
-        exit(0);
-    }
-
-    while(1) {
-        recvnum = 0;
+    if(0==sockfd) exit(0);
+    
+    while(!kbhit()) {   // use keyboard hit action to stop loops
         memset(buff, 0x00, sizeof(buff));
         recvnum = recv(sockfd, (char *)buff, 4000, 0);
-#ifdef WIN32
-        Sleep(1000);
-#endif
+//#ifdef WIN32
+//        Sleep(1000);
+//#endif
+        if(SOCKET_ERROR==recvnum || 0==recvnum) {
+            close_client_socket(sockfd);
+            SLEEP(2000);
+            printf("reconnecting...\n");
+            sockfd = creat_client_socket(ip, port);
+            continue;
+        }
         for(i = 0; i<recvnum; i++) {
             fwrite(&(buff[i]), 1, 1, output);
 #if 1

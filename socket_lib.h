@@ -38,11 +38,20 @@
  |
  | 3. close client socket
  |      closesocket(clntfd);
+ | note:
+ |  If the connection is interrupt, recv() will return SOCKET_ERROR or 0, then 
+ |  you can reconnect tcp server by the following steps:
+ |  1. close the original socket hander
+ |      closesocket(clntffd);
+ |  2. sleep a while
+ |      SLEEP(2000);
+ |  3. re-open the socket hander
+ |      clntfd = creat_client_socket("192.168.3.212", 40001);
  |
  *----------------------------------------------------------------------------*/
 
-#ifndef WINDOWS_SOCKET_H
-#define WINDOWS_SOCKET_H
+#ifndef SOCKET_LIB_H
+#define SOCKET_LIB_H
 
 /* includes ------------------------------------------------------------------*/
 #include <stdio.h>
@@ -52,10 +61,12 @@
 #ifdef WIN32
 #include <WinSock2.h>
 #pragma comment (lib, "ws2_32.lib")
+#define SLEEP(a) Sleep(a)
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#define SLEEP(a) usleep(a*1000)
 #endif // WIN32
 
 /* macros --------------------------------------------------------------------*/
@@ -79,4 +90,4 @@ extern void     close_client_socket(socket_t sock);
 }
 #endif
 
-#endif // WINDOWS_SOCKET_H
+#endif // SOCKET_LIB_H

@@ -4,6 +4,11 @@
  * author   : Guangli Dong
  *
  * history  : 2016/07/07 new
+ *            2017/03/07 change error return code from -1 to 0
+ * note     :
+ *            For win32, socket_t is SOCKET type, in fact, it is unsigned int,
+ *            so we can't assign a nagative value to socket_t, ie, any error 
+ *            code should be set to 0.
  *
  *----------------------------------------------------------------------------*/
 
@@ -13,8 +18,8 @@
 #ifdef WIN32
 /* creat_server_socket() for windows
  * returns:
- *  -1          -> error
- * non-negative -> ok
+ *  0          -> error
+ * positive    -> ok
  */
 extern socket_t creat_server_socket(const char *IP, int PORT)
 {
@@ -31,13 +36,13 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
     if(err != 0)
     {
         printf("Socket2.0 initialise failed, exit!\n");
-        return -1;
+        return 0;
     }
     if( LOBYTE(wsaData.wVersion) != 2 || HIBYTE( wsaData.wVersion) != 0)
     {
         printf("Socket version error, exit !\n");
         WSACleanup();
-        return -1;
+        return 0;
     }
 
     /* 2. creat socket */
@@ -45,7 +50,7 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
     if(sock == INVALID_SOCKET)
     {
         printf("Creat socket failed, exit!\n");
-        return -1;
+        return 0;
     }
 
     /* 3. enable address reuse */
@@ -66,7 +71,7 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
         printf("Socket listen error, exit !\n");
         closesocket(sock);
         WSACleanup();
-        return -1;
+        return 0;
     }
 
     /* 6. return socket */
@@ -75,8 +80,8 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
 
 /* creat_client_socket() for windows
  * returns:
- *  -1          -> error
- * non-negative -> ok
+ *  0          -> error
+ * positive    -> ok
  */
 extern socket_t creat_client_socket(const char *IP, int PORT)
 {
@@ -94,13 +99,13 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     if(err != 0)
     {
         printf("Socket2.0 initialise failed, exit!\n");
-        return -1;
+        return 0;
     }
     if( LOBYTE(wsaData.wVersion) != 2 || HIBYTE( wsaData.wVersion) != 0)
     {
         printf("Socket version error, exit !\n");
         WSACleanup();
-        return -1;
+        return 0;
     }
 
     /* 2. creat socket */
@@ -108,7 +113,7 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     if(sock == INVALID_SOCKET)
     {
         printf("Creat socket failed, exit!\n");
-        return -1;
+        return 0;
     }
 
     /* 3. connet socket with server address */    
@@ -122,7 +127,7 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
         printf("Connect server error!\n");
         closesocket(sock);
         WSACleanup();
-        return -1;
+        return 0;
     }
     
     /* 4. return socket */
@@ -143,8 +148,8 @@ extern void close_client_socket(socket_t sock)
 #else
 /* creat_server_socket() for linux
  * returns:
- *  -1          -> error
- * non-negative -> ok
+ *  0          -> error
+ * positive    -> ok
  */
 extern socket_t creat_server_socket(const char *IP, int PORT)
 {
@@ -171,15 +176,15 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
 
     /* 4. bind socket with address and port */
     if( ret = bind (sock, (struct sockaddr*)&servaddr, sizeof(servaddr))
-            == -1) {
+            == 0) {
         printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
+        return 0;
     }
 
     /* 5. set socket to listen mode */
     if( listen(sock, 10) == -1) {
         printf("listen socket error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
+        return 0;
     }
 
     /* 6. return created socket */
@@ -188,8 +193,8 @@ extern socket_t creat_server_socket(const char *IP, int PORT)
 
 /* creat_client_socket() for linux
  * returns:
- *  -1          -> error
- * non-negative -> ok
+ *  0          -> error
+ * positive    -> ok
  */
 extern socket_t creat_client_socket(const char *IP, int PORT)
 {
@@ -209,13 +214,13 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     servaddr.sin_port = htons(PORT);
     if( inet_pton(AF_INET, IP, &servaddr.sin_addr) <=0 ) {
         printf("inet_pton error for %s\n", IP);
-        return -1;
+        return 0;
     }
 
     /* 3. connect client socket with server address and port */
     if( connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) <0 ) {
         printf("connect error: %s(errno: %d)\n", strerror(errno), errno);
-        return -1;
+        return 0;
     }
 
     /* 4. return created socket */
