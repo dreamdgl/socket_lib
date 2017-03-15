@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     int recvnum, i;
     unsigned char buff[4096];
     FILE *output;
-    const char ip[] = "192.168.3.90";
+    const char ip[] = "192.168.2.253";
     int port = 8888;
 
     /* set for SiNan data stream */

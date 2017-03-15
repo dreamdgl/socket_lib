@@ -5,6 +5,7 @@
  *
  * history  : 2016/07/07 new
  *            2017/03/07 change error return code from -1 to 0
+ *            2017/03/15 set recv timeout quit code.
  * note     :
  *            For win32, socket_t is SOCKET type, in fact, it is unsigned int,
  *            so we can't assign a nagative value to socket_t, ie, any error 
@@ -90,7 +91,8 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     struct sockaddr_in servaddr;
     WORD    wVersionRequested;
     WSADATA wsaData;
-    int err;
+    int err, ret;
+    int timeout = 3000; //3s
 
 
     /* 1. setup socket lib version */
@@ -121,6 +123,10 @@ extern socket_t creat_client_socket(const char *IP, int PORT)
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(IP);
     servaddr.sin_port = htons(PORT);
+
+    /* set recv timeout quit */
+    ret=setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(char*)&timeout,sizeof(timeout));
+
     if( connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) 
         == SOCKET_ERROR)
     {
